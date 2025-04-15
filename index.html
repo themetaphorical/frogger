@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Frogger Classic</title>
+  <style>
+    body {
+      background: #1a1a1a;
+      color: #0f0;
+      font-family: 'Courier New', Courier, monospace;
+      text-align: center;
+    }
+    canvas {
+      background: #333;
+      display: block;
+      margin: 20px auto;
+      border: 3px solid #0f0;
+      box-shadow: 0 0 20px #0f0;
+    }
+    h1 {
+      margin-top: 20px;
+      text-shadow: 0 0 5px #0f0;
+    }
+    #message {
+      font-size: 18px;
+      margin-top: 20px;
+      color: #ff0;
+      text-shadow: 0 0 5px #ff0;
+    }
+  </style>
+</head>
+<body>
+  <h1>The Metaphorical: Frogger Classic</h1>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <p id="message"></p>
+  <audio id="jumpSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_4a03c41720.mp3"></audio>
+  <audio id="crashSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_49127e8958.mp3"></audio>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const jumpSound = document.getElementById('jumpSound');
+    const crashSound = document.getElementById('crashSound');
+    const messageElement = document.getElementById('message');
+
+    const frog = {
+      x: 190,
+      y: 380,
+      width: 20,
+      height: 20,
+      color: 'lime'
+    };
+
+    const cars = [];
+    const lanes = [60, 100, 140, 180];
+    for (let lane of lanes) {
+      for (let i = 0; i < 2; i++) {
+        cars.push({
+          x: Math.random() * 400,
+          y: lane,
+          width: 40,
+          height: 20,
+          speed: 2 + Math.random() * 2,
+          color: 'crimson'
+        });
+      }
+    }
+
+    const messages = [
+      "Each step forward is a leap in the right direction.",
+      "Don't let the roadblocks define your path.",
+      "In every journey, it's the leaps that matter.",
+      "Moving forward may be slow, but it's always progress.",
+      "The path is full of obstacles; it's your leap that counts."
+    ];
+
+    function drawFrog() {
+      ctx.fillStyle = frog.color;
+      ctx.fillRect(frog.x, frog.y, frog.width, frog.height);
+    }
+
+    function drawCars() {
+      for (let car of cars) {
+        ctx.fillStyle = car.color;
+        ctx.fillRect(car.x, car.y, car.width, car.height);
+      }
+    }
+
+    function moveCars() {
+      for (let car of cars) {
+        car.x += car.speed;
+        if (car.x > 400) car.x = -car.width;
+      }
+    }
+
+    function checkCollision() {
+      for (let car of cars) {
+        if (
+          frog.x < car.x + car.width &&
+          frog.x + frog.width > car.x &&
+          frog.y < car.y + car.height &&
+          frog.y + frog.height > car.y
+        ) {
+          crashSound.currentTime = 0;
+          crashSound.play();
+          resetGame();
+        }
+      }
+    }
+
+    function resetGame() {
+      frog.x = 190;
+      frog.y = 380;
+      const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+      messageElement.textContent = randomMessage;
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, 400, 400);
+      drawFrog();
+      drawCars();
+      moveCars();
+      checkCollision();
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowUp') frog.y -= 20;
+      if (e.key === 'ArrowDown') frog.y += 20;
+      if (e.key === 'ArrowLeft') frog.x -= 20;
+      if (e.key === 'ArrowRight') frog.x += 20;
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        jumpSound.currentTime = 0;
+        jumpSound.play();
+      }
+    });
+
+    gameLoop();
+  </script>
+</body>
+</html>
